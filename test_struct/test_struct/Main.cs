@@ -112,6 +112,42 @@ namespace test_struct
             return ret;
         }
     }
+    public struct SE : ICloneable
+    {
+        public int A;
+        public float B;
+        public long C;
+        public ulong D;
+        public byte E;
+        public string F;
+
+
+        public static SE New()
+        {
+            return new SE() { A = 1, B = 2.2f, C = 3, D = 4, E = 5, F = "F" };
+        }
+
+        public object Clone()
+        {
+            return this;
+        }
+
+    }
+    public struct SF
+    {
+        public int A;
+        public float B;
+        public long C;
+        public ulong D;
+        public byte E;
+        public string F;
+
+
+        public static SF New()
+        {
+            return new SF() { A = 1, B = 2.2f, C = 3, D = 4, E = 5, F = "F" };
+        }
+    }
 
     class MainProgram
     {
@@ -664,6 +700,39 @@ namespace test_struct
             DumpStructAddr1(ref sa, saPtr);
         }
 
+        static void Test7()
+        {
+            using (new LogTestScope("Test7"))
+            {
+                SE se = SE.New();
+                var se2 = se;
+                se2.A = se.A + 1;
+                Debug.Assert(se2.A != se.A);
+
+                var se3 = (SE)se.Clone();
+                se3.A = se.A + 1;
+                Debug.Assert(se3.A != se.A);
+
+                // 装箱
+                {
+                    var se4 = (object)se;
+                    if (se4 is ICloneable)
+                    {
+                        var se5 = (SE)(se4 as ICloneable).Clone();
+                        Debug.Assert(se5.A == se.A);
+                        se5.A = se.A + 1;
+                        Debug.Assert(se5.A != se.A);
+                    }
+                }
+                {
+                    SF sf = new SF();
+                    var sf4 = (object)sf;
+                    // 没有实现Icloneable！
+                    Debug.Assert(!(sf4 is ICloneable));
+                }
+            }
+        }
+
         static void Main(string[] args)
         {
             Test1();
@@ -679,6 +748,8 @@ namespace test_struct
             Test6(10000, 100);
 
             TestAddr();
+
+            Test7();
         }
 
     }
