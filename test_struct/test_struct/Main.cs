@@ -64,6 +64,42 @@ namespace test_struct
             return c;
         }
     }
+    // 定义拷贝行为
+    class CC : ICloneable
+    {
+        public int[] A;
+        public float[] B;
+
+        public static CC New()
+        {
+            CC c = new CC();
+            c.A = new int[100];
+            c.B = new float[100];
+            return c;
+        }
+
+        public object Clone()
+        {
+            CC c = new CC();
+
+            c.A = new int[A.Length];
+            for (int i = 0; i < A.Length; i++)
+            {
+                c.A[i] = A[i];
+            }
+            //Array.Copy(A, c.A, A.Length);
+
+            c.B = new float[B.Length];
+            for (int i = 0; i < B.Length; i++)
+            {
+                c.B[i] = B[i];
+            }
+            //Array.Copy(B, c.B, B.Length);
+
+            return c;
+        }
+    }
+
 
     // 定义拷贝行为，嵌套
     struct SD : ICloneable
@@ -444,6 +480,94 @@ namespace test_struct
             }
         }
 
+        // 重写clone方法
+        static void Test44(int Count, int Count2)
+        {
+            //int Count = 1000;
+            //int Count2 = 100;
+            using (new LogTestScope("Test44"))
+            {
+                CC[] aList = new CC[Count];
+
+                for (int i = 0; i < aList.Length; i++)
+                {
+                    ref var it = ref aList[i];
+                    it = CC.New();
+                    //it.A = new int[Count2];
+                    //it.B = new float[Count2];
+                    for (int j = 0; j < it.A.Length; j++)
+                    {
+                        it.A[j] = (i + 1) * j * 2;
+                    }
+                    for (int j = 0; j < it.B.Length; j++)
+                    {
+                        it.B[j] = (i + 1) * j * 3.1f;
+                    }
+                }
+
+
+                var memWatch = new MemoryWatcher();
+
+                var watch = new Stopwatch();
+                watch.Start();
+
+#if true
+                CC[] bList = new CC[aList.Length];
+                for (int i = 0; i < bList.Length; i++)
+                {
+                    bList[i] = (CC)aList[i].Clone();
+                }
+#else
+                // 引用
+                SC[] bList = (SC[])aList.Clone();
+                //Array.Copy(aList, bList, aList.Length);
+#endif
+
+                //long totalBytesOfMemoryUsed2 = currentProcess.WorkingSet64;
+                //var consumption = totalBytesOfMemoryUsed2 - totalBytesOfMemoryUsed1;
+                watch.Stop();
+
+                var consumption = memWatch.Stop();
+
+                // totalBytesOfMemoryUsed2 - totalBytesOfMemoryUsed2
+                Console.WriteLine($"Copy Array.Count={Count},{Count2}, cost={watch.Elapsed.TotalMilliseconds}ms, UsedMem={consumption}");
+
+                {
+                    Debug.Assert(bList.Length == aList.Length);
+                    Debug.Assert(AddressHelper.GetAddress(bList) != AddressHelper.GetAddress(aList));
+
+                    int i = 0, j = 0;
+                    Debug.Assert(bList[i].A[j] == aList[i].A[j]);
+                    Debug.Assert(bList[i].B[j] == aList[i].B[j]);
+                    Debug.Assert(AddressHelper.GetAddress(bList[i].A) != AddressHelper.GetAddress(aList[i].A));
+                    Debug.Assert(AddressHelper.GetAddress(bList[i].B) != AddressHelper.GetAddress(aList[i].B));
+
+                    i = Count / 2;
+                    j = Count2 / 2;
+                    Debug.Assert(bList[i].A[j] == aList[i].A[j]);
+                    Debug.Assert(bList[i].B[j] == aList[i].B[j]);
+                    Debug.Assert(AddressHelper.GetAddress(bList[i].A) != AddressHelper.GetAddress(aList[i].A));
+                    Debug.Assert(AddressHelper.GetAddress(bList[i].B) != AddressHelper.GetAddress(aList[i].B));
+
+                    i = Count - 1;
+                    j = Count2 - 1;
+                    Debug.Assert(bList[i].A[j] == aList[i].A[j]);
+                    Debug.Assert(bList[i].B[j] == aList[i].B[j]);
+                    Debug.Assert(AddressHelper.GetAddress(bList[i].A) != AddressHelper.GetAddress(aList[i].A));
+                    Debug.Assert(AddressHelper.GetAddress(bList[i].B) != AddressHelper.GetAddress(aList[i].B));
+
+                    i = Count - 1;
+                    j = Count2 - 1;
+                    bList[i].A[j] = 0;
+                    bList[i].B[j] = 1;
+                    Debug.Assert(bList[i].A[j] != aList[i].A[j]);
+                    Debug.Assert(bList[i].B[j] != aList[i].B[j]);
+                    Debug.Assert(AddressHelper.GetAddress(bList[i].A) != AddressHelper.GetAddress(aList[i].A));
+                    Debug.Assert(AddressHelper.GetAddress(bList[i].B) != AddressHelper.GetAddress(aList[i].B));
+                }
+            }
+        }
+
         // 使用StructArray代替Array
         static void Test5(int Count, int Count2)
         {
@@ -742,6 +866,7 @@ namespace test_struct
             Test3(10000, 100);
 
             Test4(10000, 100);
+            Test44(10000, 100);
 
             Test5(10000, 100);
 
