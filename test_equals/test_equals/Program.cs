@@ -75,7 +75,7 @@ namespace test_equals
             return MyHashTool.CombineHash(A, B, C, D, E, F);
         }
     }
-    public struct SB
+    public struct SB : IEquatable<SB>
     {
         public int A;
         public float B;
@@ -105,6 +105,16 @@ namespace test_equals
         public override int GetHashCode()
         {
             return MyHashTool.CombineHash(A, B, C, D, E, F);
+        }
+
+        public bool Equals(SB other)
+        {
+            return A.Equals(other.A)
+                && B.Equals(other.B)
+                && C.Equals(other.C)
+                && D.Equals(other.D)
+                && E.Equals(other.E)
+                && F.Equals(other.F);
         }
     }
 
@@ -192,6 +202,12 @@ namespace test_equals
             cd.B = 2;
             Debug.Assert(cd.GetHashCode() != ca.GetHashCode());
             Debug.Assert(!cd.Equals(ca));
+
+            var ce = SB.New();
+            var cf = SB.New();
+            Debug.Assert(ce.Equals(cf));    // 调用的是：public bool Equals(SB other)
+            var cg = (object)ce;
+            Debug.Assert(ce.Equals(cg));    // 调用的是：public override bool Equals(object obj)
         }
         static void Test3()
         {
