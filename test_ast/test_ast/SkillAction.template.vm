@@ -1,0 +1,114 @@
+## 我是NVelocity的注释
+// 自动生成的代码
+
+#foreach( $item in $usingList )
+using $item;
+#end
+
+// $namespace.Name
+
+#if ($namespace.Name == "")
+
+#else
+namespace $namespace.Name
+{
+#end
+
+#foreach( $cls in $namespace.ClassList )
+
+#if ($cls.Type == "Interface")
+#set($a = "interface")
+#elseif ($cls.Type == "Struct")
+#set($a = "struct")
+#else
+#set($a = "class")
+#end
+
+$cls.GetClassDefineDesc()
+{
+#foreach( $member in $cls.MemberList )
+	$member.GetMemberDesc();
+#end	
+#if($cls.HasAllToken("partial", "struct", "ISkillAction"))
+
+	public static void RegGen()
+	{
+		StructCloneEqual<$cls.Name>.CloneFunc = CloneFunc;
+		StructCloneEqual<$cls.Name>.CompareFunc = CompareFunc;
+	}
+	
+	static bool CompareFunc(in $cls.Name src, in cls.Name dst)
+	{	
+#foreach( $member in $cls.MemberList )
+		if (!MyHashTool.DoCompare(src.$member.Name, dst.$member.Name))
+		{
+			return false;
+		}
+#end
+
+        return true;	
+	}
+	
+	static void CloneFunc(in $cls.Name src, ref $cls.Name dst)
+	{
+#foreach( $member in $cls.MemberList )
+		MyHashTool.DoClone(src.$member.Name, ref dst.$member.Name)
+#end	
+	}
+	
+	public override bool Equals(object obj)
+	{
+		var other = obj is $cls.Name ? ($cls.Name) obj : default;
+
+		return CompareFunc(this, other);
+	}
+#end	
+}
+#end
+
+
+#foreach($cls1 in $namespace.ClassList)
+#if($cls1.IsInherit("ISkillAction"))
+
+    public class $tools.Combine($cls1.Name, "Proc") : SkillActionProc<$cls1.Name>
+    {
+    }
+#end
+#end	
+
+
+	public partial class RegStruct
+	{
+		public static void RegActions()
+		{
+#foreach($cls1 in $namespace.ClassList)
+#if($cls1.HasAllToken("partial", "struct", "ISkillAction"))
+			$tools.Combine($cls1.Name, ".", "RegGen()");
+#end
+#end	
+
+#foreach($cls1 in $namespace.ClassList)
+#if($cls1.IsInherit("ISkillAction"))
+			new $tools.Combine($cls1.Name, "Proc()")
+#end
+#end	
+
+#foreach($cls1 in $namespace.ClassList)
+#if($cls1.IsInherit("ISkillAction"))
+			new $tools.Combine($cls1.Name, "Proc()")
+#end
+#end
+
+#foreach($cls1 in $namespace.ClassList)
+#if($cls1.IsInherit("ISkillAction"))
+			$tools.Combine("SkillActionProc<", $cls1.Name, ">", ".Reg()")
+#end
+#end
+		}
+	}
+
+#if ($namespace.Name == "")
+
+#else
+}
+#end
