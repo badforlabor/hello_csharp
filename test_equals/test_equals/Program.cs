@@ -221,8 +221,60 @@ namespace test_equals
         }
 
 
+        class TestReadonlyConst
+        {
+            public static int A = 1;
+            public const int B = 2;
+            public readonly int C;
+            public static readonly int D = 10;
+            static TestReadonlyConst()
+            {
+                D = 11;
+            }
+
+            public TestReadonlyConst(int c)
+            {
+                C = c;
+            }
+            public void ShowMe()
+            {
+
+            }
+            public static void Test()
+            {
+                var t = new TestReadonlyConst(3);
+                TestReadonlyConst.A = 11;
+                //TestReadonlyConst.D = 12;
+                Console.WriteLine($"{TestReadonlyConst.A}, {TestReadonlyConst.B}, {t.C}, {TestReadonlyConst.D}");
+            }
+        }
+        public class TestStaticInit
+        {
+            static TestStaticInit()
+            {
+                Console.WriteLine("call static TestStaticInit ctor");
+            }
+            public static int F(int a)
+            {
+                Console.WriteLine("call TestStaticInit.F");
+                return a;
+            }
+            public static int X = F(10);
+            public static void Test()
+            {
+                Console.WriteLine($"{TestStaticInit.X}");
+            }
+        }
+            
+
+
         static void Main(string[] args)
         {
+            Console.WriteLine("enter main....");
+
+            TestReadonlyConst.Test();
+            TestStaticInit.Test();
+
             Test1();
             Test2();
             Test3();
