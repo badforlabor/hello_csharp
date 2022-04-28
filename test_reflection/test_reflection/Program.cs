@@ -92,8 +92,12 @@ namespace test_reflection
         static void LoopSetValue(ref object selfRef, FieldInfo[] members)
         {
             foreach (var m in members)
-            {                
-                if (IsSubclassOfRawGeneric(typeof(PoolArray<>), m.FieldType))
+            {
+                if (m.FieldType.IsEnum)
+                {
+                    // 枚举
+                }
+                else if (IsSubclassOfRawGeneric(typeof(PoolArray<>), m.FieldType))
                 {
                     // 特殊类型
                 }
