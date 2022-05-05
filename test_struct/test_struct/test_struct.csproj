@@ -48,6 +48,7 @@
     <Compile Include="StructArray.cs" />
     <Compile Include="StructBytes.cs" />
     <Compile Include="StructRef.cs" />
+    <Compile Include="Test7.cs" />
     <Compile Include="Tools.cs" />
   </ItemGroup>
   <ItemGroup>

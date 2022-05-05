@@ -859,8 +859,10 @@ namespace test_struct
 
         static void Main(string[] args)
         {
-            StructRef.Test1();
+            test_struct.Test7.Test();
 
+            StructRef.Test1();
+                       
             Test1();
 
             Test2(1000, 100);

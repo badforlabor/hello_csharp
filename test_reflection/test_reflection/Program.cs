@@ -48,6 +48,8 @@ namespace test_reflection
         static void Main(string[] args)
         {
 
+            Test2.Test();
+
             SC c = new SC();
             c.B = new CA();
             c.Base.B = new CA();
